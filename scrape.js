@@ -1,26 +1,21 @@
 const { chromium } = require('playwright');
 
 async function scrapeSeed(page, seed) {
-    try {
-        const url = `PASTE_REAL_BASE_URL_HERE/${seed}`;
-        console.log("Opening:", url);
+    const url = `https://sanand0.github.io/tdsdata/js_table/?seed=${seed}`;
+    console.log("Opening:", url);
 
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.goto(url, { waitUntil: 'networkidle' });
 
-        await page.waitForSelector('table', { timeout: 10000 });
+    // Wait for table to load (important because table is generated using JS)
+    await page.waitForSelector('table');
 
-        const numbers = await page.$$eval('table td', tds =>
-            tds
-                .map(td => parseFloat(td.innerText))
-                .filter(n => !isNaN(n))
-        );
+    const numbers = await page.$$eval('table td', tds =>
+        tds
+            .map(td => parseFloat(td.innerText))
+            .filter(n => !isNaN(n))
+    );
 
-        return numbers.reduce((a, b) => a + b, 0);
-
-    } catch (err) {
-        console.log(`Seed ${seed} failed:`, err.message);
-        return 0;
-    }
+    return numbers.reduce((a, b) => a + b, 0);
 }
 
 (async () => {
@@ -31,7 +26,7 @@ async function scrapeSeed(page, seed) {
 
     for (let seed = 11; seed <= 20; seed++) {
         const sum = await scrapeSeed(page, seed);
-        console.log(`Seed ${seed} sum:`, sum);
+        console.log(`Seed ${seed}:`, sum);
         total += sum;
     }
 
